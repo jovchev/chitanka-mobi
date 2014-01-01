@@ -1,0 +1,1 @@
+This folder needs to contain the correct version of kindlegen from amazon

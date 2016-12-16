@@ -32,10 +32,11 @@ function downloadEpub($epub, $book)
 {
 	$fp = fopen ($epub, 'w+');
 	$ch = curl_init("https://chitanka.info".$book);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 	curl_setopt($ch, CURLOPT_TIMEOUT, 50);
 	curl_setopt($ch, CURLOPT_FILE, $fp); 
-	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 	curl_exec($ch); 
+	$redirectURL = curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
 	curl_close($ch);
 	fclose($fp);        
 	$zip = new ZipArchive;
@@ -48,6 +49,12 @@ function downloadEpub($epub, $book)
 		$zip->deleteName($fileToModify);
 		$zip->addFromString($fileToModify, $newContents);
 		$zip->close();
+	} else {
+		echo "ERROR!! <br />";
+		echo "Redirect URL:" . $redirectURL . "<br />";
+		echo "EPUB Contents:<xmp>";
+		readfile($epub);
+		echo "</xmp>";
 	}
 }
 

@@ -30,15 +30,32 @@ if (!file_exists($mobi))
 
 function downloadEpub($epub, $book)
 {
-	$image = file_get_contents("http://chitanka.info".$book);
-	file_put_contents($epub, $image);
-
+	$fp = fopen ($epub, 'w+');
+	$ch = curl_init("https://chitanka.info".$book);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+	curl_setopt($ch, CURLOPT_FILE, $fp); 
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+	curl_exec($ch); 
+	curl_close($ch);
+	fclose($fp);        
+	$zip = new ZipArchive;
+	if ($zip->open($epub) === TRUE) {
+		$fileToModify = 'OPS/content.opf';
+		$oldContents = $zip->getFromName($fileToModify);
+		//echo "<xmp>" . $oldContents . "</xmp>";
+		$newContents = str_ireplace('<dc:language>български</dc:language>', '<dc:language>bg</dc:language>', $oldContents);
+		//echo "<hr><xmp>" . $newContents . "</xmp>";		
+		$zip->deleteName($fileToModify);
+		$zip->addFromString($fileToModify, $newContents);
+		$zip->close();
+	}
 }
 
 function convertEpub2Mobi($epub, $mobi)
 {
 	$cmd = getcwd(). '/cgi-bin/kindlegen ' . $epub . ' -o '. $mobi;
 	$a = exec($cmd);
+//        echo $a;
 }
 
 

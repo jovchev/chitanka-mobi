@@ -16,11 +16,15 @@ class VerySimpleProxy
         // Get all parameters from options
         $requestUri = '';
 	if (!empty($_SERVER['REQUEST_URI'])) {
- 	    $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+ 	    $requestUri = $_SERVER['REQUEST_URI'];
+// 	    $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+//	    echo '<pre>'.print_r($_SERVER, TRUE).'</pre>';
 	}
-	if (!empty($_SERVER['QUERY_STRING'])) {
-	    $requestUri .= '?' . $_SERVER['QUERY_STRING'];
-	}
+//	if (!empty($_SERVER['QUERY_STRING'])) {
+//	    $requestUri .= '?' . $_SERVER['QUERY_STRING'];
+//	    echo $_SERVER['QUERY_STRING'];
+//	    echo $requestUri;
+//	}
 	
         if (!empty($requestUri)) {
             $translatedUri .= $requestUri;
@@ -32,9 +36,39 @@ class VerySimpleProxy
 
         // Handle the client headers.
         $this->handleClientHeaders();
+
+
+        // Make request.
+
         $res = file_get_contents ($translatedUri);
-        $res = preg_replace('/\/book\/.*\.epub"/', '/conv.php?$0', $res);
-        $res = preg_replace('/\/text\/.*\.epub"/', '/conv.php?$0', $res);
+
+        // Replace e-pub to mobi links.
+        $res = str_replace('<head>', '<head><!-- Global Site Tag (gtag.js) - Google Analytics --> <script async src="https://www.googletagmanager.com/gtag/js?id=UA-17928634-2"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments)};gtag("js", new Date());gtag("config", "UA-17928634-2");</script>', $res);
+        
+        $res = str_replace('<title>', '<title>Огледало - ', $res);
+
+        $res = preg_replace('#"(\/book.*)\.epub"#', '$1.mobi', $res);
+        $res = preg_replace('#"(\/text.*)\.epub"#', '$1.mobi', $res);
+        $pattern = '/\<ul class="dl-list"\>.*(\<a.*class\=\"dl dl\-epub action\".*?\<\/a\>).*<\/ul\>/s';
+        $replace = '$1';
+        ini_set('display_errors',1);
+        ini_set('display_startup_errors',1);
+        error_reporting(-1);
+        //echo $res;
+        try {
+        
+        	$pattern = '#\<ul class=\"dl-list\"\>.*(\<a.*class\=\"dl dl\-epub action\".*?\<\/a\>).*<\/ul\>#s';
+		$replacement = '$1';
+		$limit = -1;
+		$count = 0;
+		$result = preg_replace ($pattern, $replacement, $res, $limit, $count);
+		//echo "<xmp>$count</xmp>";
+
+        	//$res = preg_replace($pattern, '$1', $res);
+		//$res = preg_replace($pattern, $replace, $res);
+	} catch (Exception $e) {
+	    echo 'Caught exception: ',  $e->getMessage(), "\n";
+	}
 
         echo $res;
 

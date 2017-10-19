@@ -1,7 +1,16 @@
+<IfModule mod_fcgid.c>
+AddHandler fcgid-script .php
+FcgidWrapper /home/bulexpoc/public_html/bb/php.fcgi .php
+</IfModule>
+
 RewriteEngine On
+RewriteRule ^(.+)\.mobi$ conv.php?/$1.epub [QSA]
 RewriteCond %{REQUEST_FILENAME} !-f [NC]
 RewriteCond %{REQUEST_FILENAME} !-d [NC]
+
+RewriteCond %{REQUEST_URI} !^/robots.txt
 RewriteCond %{REQUEST_URI} !^/conv.php
 RewriteCond %{REQUEST_URI} !^/tmp
 RewriteCond %{REQUEST_URI} !^/index.php
-RewriteRule ^(.+)$ index.php/$1 [QSA]
+
+RewriteRule ^(.+)$ index.php?/$1 [QSA]

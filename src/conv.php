@@ -52,9 +52,13 @@ function downloadEpub($epub, $book)
 	} else {
 		echo "ERROR!! <br />";
 		echo "Redirect URL:" . $redirectURL . "<br />";
-		echo "EPUB Contents:<xmp>";
-		readfile($epub);
-		echo "</xmp>";
+		echo "Deleting downloaded file. Try again later.";
+
+		//echo "EPUB Contents:<xmp>";
+		//readfile($epub);
+		//echo "</xmp>";
+		unlink($epub);
+
 	}
 }
 
